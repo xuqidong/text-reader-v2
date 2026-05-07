@@ -1,6 +1,6 @@
 const DB_NAME = "text-reader";
 const DB_VERSION = 3;
-const APP_VERSION = "v38";
+const APP_VERSION = "v39";
 const DEFAULT_FONT_SIZE = 20;
 const RENDER_CHUNK_SIZE = 2000;
 const DICTIONARY_SEED_VERSION = "english-chinese-starter-v1";

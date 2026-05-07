@@ -1,11 +1,11 @@
-const CACHE_NAME = "text-reader-v38";
+const CACHE_NAME = "text-reader-v39";
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/manifest.webmanifest",
-  "/assets/icon.svg",
-  "/src/app.js",
-  "/src/styles.css"
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./assets/icon.svg",
+  "./src/app.js",
+  "./src/styles.css"
 ];
 
 self.addEventListener("install", (event) => {
