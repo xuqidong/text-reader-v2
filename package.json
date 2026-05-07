@@ -1,0 +1,10 @@
+{
+  "name": "text-reader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local-first Chinese and English TXT reader PWA.",
+  "scripts": {
+    "dev": "python3 server.py",
+    "check": "node --check src/app.js"
+  }
+}

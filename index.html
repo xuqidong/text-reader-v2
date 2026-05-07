@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f3eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Text Reader">
+    <title>Text Reader</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/src/styles.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <aside class="library-pane" aria-label="Book library">
+        <header class="pane-header">
+          <div>
+            <p class="eyebrow">Library</p>
+            <h1>Text Reader</h1>
+          </div>
+          <label class="icon-button import-button" title="Import TXT file" aria-label="Import TXT file">
+            <span aria-hidden="true">+</span>
+            <input id="fileInput" type="file" accept=".txt,text/plain">
+          </label>
+        </header>
+
+        <div class="sync-card">
+          <div>
+            <strong>Local first</strong>
+            <span>Books and highlights are saved on this device. <span id="dictionaryStatus">Dictionary is starting.</span></span>
+            <span id="syncStatus">Sync is not configured.</span>
+          </div>
+          <label class="secondary-button file-button">
+            Import dictionary
+            <input id="dictionaryInput" type="file" accept=".json,.csv,.tsv,.txt,application/json,text/csv,text/tab-separated-values,text/plain">
+          </label>
+          <button id="installEcdict" class="secondary-button" type="button">Install ECDICT</button>
+          <div class="backup-actions">
+            <button id="exportData" class="secondary-button" type="button">Export data</button>
+            <label class="secondary-button file-button">
+              Import backup
+              <input id="backupInput" type="file" accept=".json,application/json">
+            </label>
+          </div>
+          <details class="sync-settings">
+            <summary>Supabase sync</summary>
+            <label>
+              Project URL
+              <input id="supabaseUrl" type="url" autocomplete="off" placeholder="https://project.supabase.co">
+            </label>
+            <label>
+              Anon key
+              <input id="supabaseAnonKey" type="password" autocomplete="off" placeholder="Supabase anon key">
+            </label>
+            <button id="saveSupabaseConfig" class="secondary-button" type="button">Save sync config</button>
+            <label>
+              Email
+              <input id="syncEmail" type="email" autocomplete="email">
+            </label>
+            <label>
+              Password
+              <input id="syncPassword" type="password" autocomplete="current-password">
+            </label>
+            <div class="sync-actions">
+              <button id="syncSignUp" class="secondary-button" type="button">Sign up</button>
+              <button id="syncSignIn" class="secondary-button" type="button">Sign in</button>
+              <button id="syncSignOut" class="secondary-button" type="button">Sign out</button>
+              <button id="syncPush" class="primary-button" type="button">Push to cloud</button>
+              <button id="syncPull" class="secondary-button" type="button">Pull from cloud</button>
+            </div>
+          </details>
+        </div>
+
+        <section>
+          <div class="section-title">
+            <span>Books</span>
+            <span id="bookCount">0</span>
+          </div>
+          <div id="bookList" class="book-list"></div>
+        </section>
+
+      </aside>
+
+      <main class="reader-pane">
+        <header class="reader-toolbar">
+          <button id="backToLibrary" class="toolbar-button mobile-only" type="button" aria-label="Back to library">Library</button>
+          <div class="reader-title-block">
+            <p id="readerMeta" class="eyebrow">No book selected</p>
+            <h2 id="readerTitle">Import a TXT book</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="fontDown" class="icon-button" type="button" title="Smaller text" aria-label="Smaller text">A-</button>
+            <button id="fontUp" class="icon-button" type="button" title="Larger text" aria-label="Larger text">A+</button>
+            <button id="closeBook" class="icon-button" type="button" title="Close book" aria-label="Close book">X</button>
+          </div>
+        </header>
+
+        <section id="emptyState" class="empty-state">
+          <div>
+            <p class="eyebrow">Start reading</p>
+            <h2>Import a Chinese or English TXT file.</h2>
+            <p>The first version saves books, reading position, and highlights locally. Offline dictionary lookup and cloud sync are the next milestones.</p>
+          </div>
+        </section>
+
+        <article id="reader" class="reader" tabindex="0" aria-label="Book text"></article>
+
+        <div id="selectionPanel" class="selection-panel" hidden>
+          <div>
+            <p class="eyebrow">Selection</p>
+            <strong id="selectedText"></strong>
+            <p id="lookupResult"></p>
+          </div>
+          <div class="selection-actions">
+            <button id="highlightSelection" class="primary-button" type="button">Highlight</button>
+            <button id="removeHighlight" class="secondary-button danger-button" type="button">Unhighlight</button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
