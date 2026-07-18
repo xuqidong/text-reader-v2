@@ -8,13 +8,13 @@ A local-first Progressive Web App for reading Chinese and English TXT books. Sel
 
 | Layer | Choice |
 |---|---|
-| Framework | None — vanilla JS, single `src/app.js` (~70 KB) |
+| Framework | None — vanilla JavaScript modules |
 | Styling | Single CSS file `src/styles.css`, CSS custom properties |
-| Storage | IndexedDB (`text-reader`, version 3) |
+| Storage | IndexedDB (`text-reader`, version 4) |
 | Sync | Supabase (manual push/pull only) |
-| Dictionary | ECDICT (English-Chinese), stored in IndexedDB |
+| Dictionary | Built-in 40K ECDICT core plus optional full ECDICT, stored in IndexedDB |
 | Hosting | GitHub Pages (static, HTTPS) |
-| Service Worker | Cache-first for app shell, stale-while-revalidate |
+| Service Worker | Versioned app shell, network-first navigation, cache-first static assets |
 
 ## Files
 
@@ -30,9 +30,16 @@ A local-first Progressive Web App for reading Chinese and English TXT books. Sel
 ├── assets/
 │   ├── icon.svg            # PWA icon (SVG)
 │   ├── icon-192.png
-│   └── icon-512.png
+│   ├── icon-512.png
+│   └── dictionary-core.json # Built-in offline English-Chinese core
+├── scripts/
+│   └── build-core-dictionary.mjs
 └── src/
-    ├── app.js              # All application logic
+    ├── app.js              # UI and reader interactions
+    ├── config.js           # Public deploy-time Supabase values
+    ├── db.js               # IndexedDB schema and migrations
+    ├── dictionary.js       # Offline dictionary install and lookup
+    ├── sync.js             # Session and directional Supabase sync
     └── styles.css           # All styles
 ```
 
@@ -40,7 +47,7 @@ A local-first Progressive Web App for reading Chinese and English TXT books. Sel
 
 ```bash
 npm run dev        # Start dev server on http://localhost:5173
-npm run check      # Syntax check app.js
+npm run check      # Syntax check every JavaScript module and service worker
 ```
 
 The dev server (`server.py`) adds `Cache-Control: no-cache` on `/sw.js` so the browser always checks for SW updates locally.
@@ -55,7 +62,7 @@ Book text is rendered in chunks as plain text nodes. Only saved highlights get `
 
 1. User taps/selects English text
 2. Dictionary panel opens with lookup result
-3. User presses Highlight (or Unhighlight if already highlighted)
+3. User saves the word (or removes it if already saved)
 4. Affected text chunks re-render immediately
 5. IndexedDB write queues in the background
 6. Highlight list in library updates when user returns to library view
@@ -70,15 +77,17 @@ Book text is rendered in chunks as plain text nodes. Only saved highlights get `
 ### Sync Model
 
 - **Manual only.** Reading actions never trigger sync.
-- **Push:** this device overwrites the cloud (delete then upload).
-- **Pull:** the cloud overwrites this device (delete then insert).
+- **Push:** this device overwrites the cloud (upsert local rows, then delete stale cloud rows).
+- **Pull:** the cloud overwrites this device in one local transaction.
 - No merge logic. No conflict resolution. Directional overwrite only.
 
 ### Dictionary
 
 - English → Chinese only. Chinese → English is intentionally disabled.
-- ECDICT installs into IndexedDB with one click (~766K entries, ~280 MB compressed CSV).
-- Fully offline after installation.
+- A curated 40,000-word ECDICT core installs automatically and is part of the offline app shell.
+- The full ECDICT installer streams data into IndexedDB in batches and resumes after interruption.
+- Existing large v39 dictionary installs are adopted instead of discarded.
+- Public dictionary data is excluded from user backups because it can be reinstalled; custom dictionary records are backed up and take precedence over ECDICT updates.
 
 ### Book Identity
 
@@ -90,14 +99,14 @@ Two constants must always bump together when app behavior changes:
 
 | Location | Constant | Purpose |
 |---|---|---|
-| `src/app.js:3` | `APP_VERSION` | Shown in UI, drives local migrations |
+| `src/app.js` | `APP_VERSION` | Shown in UI, identifies behavior changes |
 | `sw.js:1` | `CACHE_NAME` | Forces SW re-install to pick up new code |
 
 When you change `APP_VERSION` or `CACHE_NAME`, bump both to the same value (e.g., v39 → v40).
 
 ### Service Worker Auto-Update
 
-The SW uses cache-first with `skipWaiting()` + `clients.claim()`. When a new SW activates, `app.js` catches the `controllerchange` event and calls `window.location.reload()`. This means: bump the version, push to main, and all clients automatically pick up the new code on their next visit.
+The SW pre-caches a versioned app shell, uses network-first navigation, and bypasses all cross-origin traffic so dictionary downloads and Supabase responses are never duplicated in Cache Storage. It uses `skipWaiting()` + `clients.claim()`; `app.js` reloads once on `controllerchange`.
 
 ## Deployment
 
@@ -110,6 +119,8 @@ The SW uses cache-first with `skipWaiting()` + `clients.claim()`. When a new SW 
 Run `docs/supabase-schema.sql` from the original project to create the three tables (`tr_books`, `tr_highlights`, `tr_positions`) with row-level security and delete policies.
 
 Add `https://xuqidong.github.io` to Supabase allowed redirect URLs for auth.
+
+Put the public Project URL and publishable/anon key in `src/config.js` before deployment. Never put a service-role or secret key there. Existing per-device v39 configuration is still read as a migration fallback.
 
 ## What NOT to Change Without Explicit Approval
 

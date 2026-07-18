@@ -1,125 +1,294 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#f7f3eb">
+    <meta name="theme-color" content="#f3efe6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Text Reader">
+    <meta name="description" content="离线阅读中英文 TXT，轻点英文单词查中文并保存。">
     <title>Text Reader</title>
     <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="stylesheet" href="./src/styles.css">
+    <link rel="stylesheet" href="./src/styles.css?v=40">
   </head>
   <body>
     <div id="app" class="app-shell">
-      <aside class="library-pane" aria-label="Book library">
-        <header class="pane-header">
-          <div>
-            <p class="eyebrow">Library</p>
-            <h1>Text Reader</h1>
-          </div>
-          <label class="icon-button import-button" title="Import TXT file" aria-label="Import TXT file">
-            <span aria-hidden="true">+</span>
-            <input id="fileInput" type="file" accept=".txt,text/plain">
-          </label>
-        </header>
-
-        <div class="sync-card">
-          <div>
-            <strong>Local first</strong>
-            <span>Books and highlights are saved on this device. <span id="dictionaryStatus">Dictionary is starting.</span></span>
-            <span id="syncStatus">Sync is not configured.</span>
-          </div>
-          <label class="secondary-button file-button">
-            Import dictionary
-            <input id="dictionaryInput" type="file" accept=".json,.csv,.tsv,.txt,application/json,text/csv,text/tab-separated-values,text/plain">
-          </label>
-          <button id="installEcdict" class="secondary-button" type="button">Install ECDICT</button>
-          <div class="backup-actions">
-            <button id="exportData" class="secondary-button" type="button">Export data</button>
-            <label class="secondary-button file-button">
-              Import backup
-              <input id="backupInput" type="file" accept=".json,application/json">
-            </label>
-          </div>
-          <details class="sync-settings">
-            <summary>Supabase sync</summary>
-            <label>
-              Project URL
-              <input id="supabaseUrl" type="url" autocomplete="off" placeholder="https://project.supabase.co">
-            </label>
-            <label>
-              Anon key
-              <input id="supabaseAnonKey" type="password" autocomplete="off" placeholder="Supabase anon key">
-            </label>
-            <button id="saveSupabaseConfig" class="secondary-button" type="button">Save sync config</button>
-            <label>
-              Email
-              <input id="syncEmail" type="email" autocomplete="email">
-            </label>
-            <label>
-              Password
-              <input id="syncPassword" type="password" autocomplete="current-password">
-            </label>
-            <div class="sync-actions">
-              <button id="syncSignUp" class="secondary-button" type="button">Sign up</button>
-              <button id="syncSignIn" class="secondary-button" type="button">Sign in</button>
-              <button id="syncSignOut" class="secondary-button" type="button">Sign out</button>
-              <button id="syncPush" class="primary-button" type="button">Push to cloud</button>
-              <button id="syncPull" class="secondary-button" type="button">Pull from cloud</button>
+      <main id="appContent" class="app-content">
+        <section id="libraryView" class="view" aria-labelledby="libraryTitle">
+          <header class="topbar">
+            <div class="brand-block">
+              <p class="eyebrow">离线双语阅读器</p>
+              <h1 id="libraryTitle" tabindex="-1">Text Reader</h1>
             </div>
-          </details>
-        </div>
+            <label class="button button--primary import-label" for="fileInput">＋ 导入 TXT</label>
+          </header>
 
-        <section>
-          <div class="section-title">
-            <span>Books</span>
-            <span id="bookCount">0</span>
-          </div>
-          <div id="bookList" class="book-list"></div>
-        </section>
+          <div class="view-inner">
+            <section class="welcome-card" aria-labelledby="welcomeTitle">
+              <div>
+                <p class="eyebrow">读到哪里，就从哪里继续</p>
+                <h2 id="welcomeTitle">点英文单词，立即查中文并保存。</h2>
+                <p>书籍、阅读进度和生词先保存在本机；离线时也能继续阅读和查词。</p>
+              </div>
+              <label class="button button--dark welcome-import" for="fileInput">导入第一本书</label>
+            </section>
 
-      </aside>
-
-      <main class="reader-pane">
-        <header class="reader-toolbar">
-          <button id="backToLibrary" class="toolbar-button mobile-only" type="button" aria-label="Back to library">Library</button>
-          <div class="reader-title-block">
-            <p id="readerMeta" class="eyebrow">No book selected</p>
-            <h2 id="readerTitle">Import a TXT book</h2>
-          </div>
-          <div class="toolbar-actions">
-            <button id="fontDown" class="icon-button" type="button" title="Smaller text" aria-label="Smaller text">A-</button>
-            <button id="fontUp" class="icon-button" type="button" title="Larger text" aria-label="Larger text">A+</button>
-            <button id="closeBook" class="icon-button" type="button" title="Close book" aria-label="Close book">X</button>
-          </div>
-        </header>
-
-        <section id="emptyState" class="empty-state">
-          <div>
-            <p class="eyebrow">Start reading</p>
-            <h2>Import a Chinese or English TXT file.</h2>
-            <p>The first version saves books, reading position, and highlights locally. Offline dictionary lookup and cloud sync are the next milestones.</p>
+            <section aria-labelledby="bookSectionTitle">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">我的书架</p>
+                  <h2 id="bookSectionTitle">书籍</h2>
+                </div>
+                <span id="bookCount" class="count-badge">0</span>
+              </div>
+              <ul id="bookList" class="book-grid" aria-live="polite"></ul>
+            </section>
           </div>
         </section>
 
-        <article id="reader" class="reader" tabindex="0" aria-label="Book text"></article>
+        <section id="vocabularyView" class="view" aria-labelledby="vocabularyTitle" hidden>
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">在阅读中积累</p>
+              <h1 id="vocabularyTitle" tabindex="-1">生词本</h1>
+            </div>
+            <span id="savedWordCount" class="count-badge">0</span>
+          </header>
 
-        <div id="selectionPanel" class="selection-panel" hidden>
-          <div>
-            <p class="eyebrow">Selection</p>
-            <strong id="selectedText"></strong>
-            <p id="lookupResult"></p>
+          <div class="view-inner view-inner--narrow">
+            <div class="filter-bar">
+              <label class="search-field">
+                <span class="visually-hidden">搜索生词</span>
+                <input id="wordSearch" type="search" inputmode="search" placeholder="搜索单词或释义">
+              </label>
+              <label class="select-field">
+                <span class="visually-hidden">按书籍筛选</span>
+                <select id="wordBookFilter" aria-label="按书籍筛选">
+                  <option value="">全部书籍</option>
+                </select>
+              </label>
+            </div>
+            <ul id="savedWordList" class="word-list" aria-live="polite"></ul>
           </div>
-          <div class="selection-actions">
-            <button id="highlightSelection" class="primary-button" type="button">Highlight</button>
-            <button id="removeHighlight" class="secondary-button danger-button" type="button">Unhighlight</button>
+        </section>
+
+        <section id="settingsView" class="view" aria-labelledby="settingsTitle" hidden>
+          <header class="topbar">
+            <div>
+              <p class="eyebrow">只在需要时打开</p>
+              <h1 id="settingsTitle" tabindex="-1">设置</h1>
+            </div>
+          </header>
+
+          <div class="view-inner settings-grid">
+            <section class="settings-card" aria-labelledby="readingSettingsTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">阅读</p>
+                  <h2 id="readingSettingsTitle">文字与主题</h2>
+                </div>
+                <output id="fontSizeValue" class="setting-value">20 px</output>
+              </div>
+              <div class="stepper" aria-label="阅读字号">
+                <button id="settingsFontDown" class="icon-button" type="button" aria-label="减小字号">A−</button>
+                <div class="stepper-track" aria-hidden="true"><span id="fontSizeTrack"></span></div>
+                <button id="settingsFontUp" class="icon-button" type="button" aria-label="增大字号">A＋</button>
+              </div>
+              <div class="segmented-control" aria-label="阅读主题">
+                <button type="button" data-theme-choice="paper">纸张</button>
+                <button type="button" data-theme-choice="sepia">护眼</button>
+                <button type="button" data-theme-choice="night">夜间</button>
+              </div>
+            </section>
+
+            <section class="settings-card" aria-labelledby="storageTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">本机数据</p>
+                  <h2 id="storageTitle">存储保护</h2>
+                </div>
+                <span id="storageBadge" class="status-pill">检查中</span>
+              </div>
+              <p id="storageStatus" class="supporting-text" role="status">正在检查浏览器存储状态…</p>
+              <div class="meter" aria-hidden="true"><span id="storageMeter"></span></div>
+              <button id="protectStorage" class="button button--secondary" type="button">请求持久存储</button>
+            </section>
+
+            <section class="settings-card settings-card--wide" aria-labelledby="dictionaryTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">无需联网查词</p>
+                  <h2 id="dictionaryTitle">离线英汉词典</h2>
+                </div>
+                <span id="dictionaryBadge" class="status-pill">准备中</span>
+              </div>
+              <p id="dictionaryStatus" class="supporting-text" role="status">正在准备内置常用词典…</p>
+              <div id="dictionaryProgress" class="progress-row" hidden>
+                <div class="meter"><span id="dictionaryProgressBar"></span></div>
+                <span id="dictionaryProgressText">0%</span>
+              </div>
+              <div class="button-row">
+                <button id="repairCoreDictionary" class="button button--secondary" type="button">修复常用词典</button>
+                <button id="installFullDictionary" class="button button--primary" type="button">安装完整词典</button>
+              </div>
+              <details class="advanced-details">
+                <summary>导入自己的词典</summary>
+                <p>支持 JSON、CSV、TSV。至少需要英文词条和中文释义两列。</p>
+                <label class="button button--secondary import-label" for="dictionaryInput">选择词典文件</label>
+              </details>
+              <p class="fine-print">词典数据来自 ECDICT（MIT）。完整词典较大；常用 40,000 词版本会自动离线安装。自定义词典会进入文件备份，但不参与云端同步。</p>
+            </section>
+
+            <section class="settings-card settings-card--wide" aria-labelledby="syncTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">手动覆盖，方向明确</p>
+                  <h2 id="syncTitle">云端同步</h2>
+                </div>
+                <span id="syncBadge" class="status-pill">未连接</span>
+              </div>
+              <p id="syncStatus" class="supporting-text" role="status">正在检查登录状态…</p>
+              <p id="syncLastStatus" class="fine-print"></p>
+
+              <div id="syncSignedOut" class="form-stack" hidden>
+                <label>
+                  <span>邮箱</span>
+                  <input id="syncEmail" type="email" autocomplete="email">
+                </label>
+                <label>
+                  <span>密码</span>
+                  <input id="syncPassword" type="password" autocomplete="current-password">
+                </label>
+                <div class="button-row">
+                  <button id="syncSignIn" class="button button--primary" type="button">登录并记住本机</button>
+                  <button id="syncSignUp" class="button button--secondary" type="button">创建账号</button>
+                </div>
+              </div>
+
+              <div id="syncSignedIn" hidden>
+                <p class="account-line">已登录 <strong id="syncAccount"></strong></p>
+                <div class="sync-direction-grid">
+                  <button id="syncPush" class="direction-card" type="button">
+                    <strong>上传本机数据</strong>
+                    <span>本机覆盖云端</span>
+                  </button>
+                  <button id="syncPull" class="direction-card" type="button">
+                    <strong>从云端恢复</strong>
+                    <span>云端覆盖本机</span>
+                  </button>
+                </div>
+                <button id="syncSignOut" class="text-button" type="button">退出登录</button>
+              </div>
+
+              <details id="syncSetupDetails" class="advanced-details">
+                <summary>一次性同步服务设置</summary>
+                <p>部署前把公开的 Project URL 和 publishable key 写入应用配置后，每台设备都不需要再填写。</p>
+                <div class="form-stack">
+                  <label>
+                    <span>Supabase Project URL</span>
+                    <input id="supabaseUrl" type="url" autocomplete="off" placeholder="https://project.supabase.co">
+                  </label>
+                  <label>
+                    <span>Publishable / anon key</span>
+                    <input id="supabaseKey" type="password" autocomplete="off">
+                  </label>
+                  <div class="button-row">
+                    <button id="saveSupabaseConfig" class="button button--secondary" type="button">保存一次性配置</button>
+                    <button id="clearSupabaseConfig" class="text-button text-button--danger" type="button">清除配置</button>
+                  </div>
+                </div>
+              </details>
+            </section>
+
+            <section class="settings-card" aria-labelledby="backupTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">额外保险</p>
+                  <h2 id="backupTitle">备份</h2>
+                </div>
+              </div>
+              <p class="supporting-text">备份书籍、生词、进度和自定义词典；公共 ECDICT 可随时重装，不再塞进备份文件。</p>
+              <div class="button-row">
+                <button id="exportData" class="button button--secondary" type="button">导出备份</button>
+                <label class="button button--secondary import-label" for="backupInput">导入备份</label>
+              </div>
+            </section>
+
+            <section class="settings-card" aria-labelledby="aboutTitle">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">关于</p>
+                  <h2 id="aboutTitle">Text Reader</h2>
+                </div>
+                <span id="appVersion" class="setting-value">v40</span>
+              </div>
+              <p class="supporting-text">只做中英文 TXT 阅读、英文查中文、保存生词和手动同步。</p>
+            </section>
           </div>
-        </div>
+        </section>
+
+        <section id="readerView" class="reader-view" aria-labelledby="readerTitle" hidden>
+          <header class="reader-toolbar">
+            <button id="readerBack" class="toolbar-button" type="button" aria-label="返回书架">‹</button>
+            <div class="reader-title-block">
+              <h1 id="readerTitle">未选择书籍</h1>
+              <p id="readerMeta">0%</p>
+            </div>
+            <button id="readerOptionsButton" class="toolbar-button toolbar-button--text" type="button" aria-label="阅读显示设置" aria-expanded="false" aria-controls="readerControls">Aa</button>
+          </header>
+
+          <div id="readerControls" class="reader-controls" hidden>
+            <div class="stepper stepper--compact">
+              <button id="readerFontDown" class="icon-button" type="button" aria-label="减小字号">A−</button>
+              <span id="readerFontValue">20 px</span>
+              <button id="readerFontUp" class="icon-button" type="button" aria-label="增大字号">A＋</button>
+            </div>
+            <div class="segmented-control segmented-control--compact" aria-label="阅读主题">
+              <button type="button" data-theme-choice="paper">纸张</button>
+              <button type="button" data-theme-choice="sepia">护眼</button>
+              <button type="button" data-theme-choice="night">夜间</button>
+            </div>
+          </div>
+
+          <article id="reader" class="reader" tabindex="0" aria-label="书籍正文"></article>
+
+          <aside id="lookupSheet" class="lookup-sheet" role="dialog" aria-modal="false" aria-labelledby="selectedText" hidden>
+            <div class="lookup-sheet__handle" aria-hidden="true"></div>
+            <header class="lookup-sheet__header">
+              <div>
+                <strong id="selectedText" lang="en"></strong>
+                <span id="lookupPhonetic" class="phonetic" lang="en"></span>
+              </div>
+              <button id="closeLookup" class="toolbar-button" type="button" aria-label="关闭查词卡">×</button>
+            </header>
+            <div class="lookup-sheet__body">
+              <div id="lookupResult" class="definition-list" aria-live="polite"></div>
+              <blockquote id="lookupContext" class="lookup-context"></blockquote>
+              <p id="lookupHint" class="fine-print"></p>
+            </div>
+            <footer class="lookup-sheet__actions">
+              <button id="saveSelectedWord" class="button button--primary" type="button">保存单词</button>
+              <button id="removeSelectedWord" class="button button--secondary button--danger" type="button" hidden>取消保存</button>
+              <button id="openDictionarySettings" class="button button--secondary" type="button" hidden>去设置修复词典</button>
+            </footer>
+          </aside>
+        </section>
       </main>
+
+      <nav id="appNav" class="app-nav" aria-label="主要页面">
+        <button type="button" data-view="library" aria-current="page"><span>书架</span></button>
+        <button type="button" data-view="vocabulary"><span>生词本</span></button>
+        <button type="button" data-view="settings"><span>设置</span></button>
+      </nav>
+
+      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+      <input id="fileInput" class="visually-hidden" type="file" accept=".txt,text/plain">
+      <input id="dictionaryInput" class="visually-hidden" type="file" accept=".json,.csv,.tsv,.txt,application/json,text/csv,text/tab-separated-values,text/plain">
+      <input id="backupInput" class="visually-hidden" type="file" accept=".json,application/json">
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/app.js?v=40"></script>
   </body>
 </html>

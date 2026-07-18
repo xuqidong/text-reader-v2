@@ -5,6 +5,6 @@
   "description": "Local-first Chinese and English TXT reader PWA.",
   "scripts": {
     "dev": "python3 server.py",
-    "check": "node --check src/app.js"
+    "check": "node --check src/app.js && node --check src/db.js && node --check src/dictionary.js && node --check src/sync.js && node --check sw.js"
   }
 }

@@ -1,43 +1,78 @@
-const CACHE_NAME = "text-reader-v39";
+const CACHE_NAME = "text-reader-v40";
+const CACHE_PREFIX = "text-reader-";
+const OFFLINE_PAGE = "./index.html?v=40";
 const APP_SHELL = [
-  "./",
-  "./index.html",
+  OFFLINE_PAGE,
   "./manifest.webmanifest",
   "./assets/icon.svg",
-  "./src/app.js",
-  "./src/styles.css"
+  "./assets/icon-192.png",
+  "./assets/icon-512.png",
+  "./assets/dictionary-core.json",
+  "./src/app.js?v=40",
+  "./src/config.js",
+  "./src/db.js",
+  "./src/dictionary.js",
+  "./src/sync.js",
+  "./src/styles.css?v=40"
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
   );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
-    )
+    caches.keys().then((keys) => Promise.all(
+      keys
+        .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+        .map((key) => caches.delete(key))
+    ))
   );
   self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+  const scopePath = new URL("./", self.location.href).pathname;
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(scopePath)) return;
+
+  if (request.mode === "navigate") {
+    const isAppNavigation = url.pathname === scopePath || url.pathname === `${scopePath}index.html`;
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok && isAppNavigation) {
+            event.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.put(OFFLINE_PAGE, response.clone()))
+            );
+          }
+          return response;
+        })
+        .catch(() => caches.match(OFFLINE_PAGE))
+    );
+    return;
+  }
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(request).then((cached) => {
+      const network = fetch(request).then((response) => {
+        if (response.ok) {
+          event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone())));
+        }
+        return response;
+      });
       if (cached) {
-        event.waitUntil(
-          fetch(event.request).then((response) => {
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          })
-        );
+        event.waitUntil(network.catch(() => undefined));
         return cached;
       }
-      return fetch(event.request);
+      return network;
     })
   );
 });
