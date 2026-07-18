@@ -36,7 +36,7 @@ import {
   signUp
 } from "./sync.js";
 
-const APP_VERSION = "v40";
+const APP_VERSION = "v41";
 const BACKUP_VERSION = 2;
 const RENDER_CHUNK_SIZE = 2000;
 const DEFAULT_FONT_SIZE = 20;

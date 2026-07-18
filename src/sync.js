@@ -1,4 +1,4 @@
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "./config.js?v=41";
 import {
   getAllRecords,
   getMeta,

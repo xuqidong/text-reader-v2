@@ -1,6 +1,6 @@
-const CACHE_NAME = "text-reader-v40";
+const CACHE_NAME = "text-reader-v41";
 const CACHE_PREFIX = "text-reader-";
-const OFFLINE_PAGE = "./index.html?v=40";
+const OFFLINE_PAGE = "./index.html?v=41";
 const APP_SHELL = [
   OFFLINE_PAGE,
   "./manifest.webmanifest",
@@ -8,12 +8,12 @@ const APP_SHELL = [
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   "./assets/dictionary-core.json",
-  "./src/app.js?v=40",
-  "./src/config.js",
+  "./src/app.js?v=41",
+  "./src/config.js?v=41",
   "./src/db.js",
   "./src/dictionary.js",
   "./src/sync.js",
-  "./src/styles.css?v=40"
+  "./src/styles.css?v=41"
 ];
 
 self.addEventListener("install", (event) => {

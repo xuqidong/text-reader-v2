@@ -264,8 +264,8 @@ export async function migrateLegacyHighlights() {
   const missing = legacy.filter((item) => !savedIds.has(item.id)).map(legacyHighlightToSavedWord);
   await runTransaction(["highlights", "savedWords"], "readwrite", ({ highlights, savedWords }) => {
     for (const item of missing) savedWords.put(item);
-    // v40 reads only savedWords. Clearing the migrated source prevents a word
-    // deleted in v40 from being resurrected by the next startup migration.
+    // v41 reads only savedWords. Clearing the migrated source prevents a word
+    // deleted in v41 from being resurrected by the next startup migration.
     highlights.clear();
   });
   return missing.length;
